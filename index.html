@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <body>
+    <h1>חיפוש רכב לפי מספר</h1>
+    <h2>Check Car</h2>
+    <div class="search-container">
+        <input type="text" id="text" placeholder="Enter car number...">
+        <button id="btn">Search</button>
+        <button id="reset-btn">Reset</button>
+        
+        <div id="car"></div>
+    </div>
+    <div id="error-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:rgb(12, 10, 10); padding:20px; border-radius:10px; text-align:center;">
+            <h2>Car Number Not Found</h2>
+            <p>This car number was not found.</p>
+            <button id="close-modal">Close</button>
+        </div>
+    </div>
+    <script>
+        $("#btn").on("click", function () {
+            const searchTerm = $("#text").val().trim(); // Get the input value and trim whitespace
+            if (searchTerm === "") {
+                alert("Please enter a car number to search."); // Alert if input is empty
+                $("#car").hide(); // Ensure results are hidden
+                return; // Exit the function if input is empty
+            }
+
+            $.ajax({
+                url: "https://data.gov.il/api/3/action/datastore_search",
+                data: {
+                    resource_id: "053cea08-09bc-40ec-8f7a-156f0677aff3",
+                    q: searchTerm // Use the trimmed search term
+                },
+                success: function (res) {
+                    const sof = res.result.records;
+                    console.log(sof);
+                    $("#car").html(``); // Clear previous results
+                    if (sof.length === 0) {
+                        $("#error-modal").show(); // Show the modal if no results
+                    } else {
+                        $.each(sof, function (index, item) {
+                            $("#car").append(`
+                                <span> שם תוצר :${item.tozeret_nm}</span>
+                                <span>  ${item.kinuy_mishari}</span>
+                                <span>  רמת גימור :${item.ramat_gimur}</span>
+                                <span>שנת יצור :${item.moed_aliya_lakvish}</span>
+                                <span> בעלות :${item.baalut}</span>
+                                <span>  צבע רכב :${item.tzeva_rechev}</span>
+                                <span> מספר רכב :${item.mispar_rechev}</span>
+                                <span>סוג דלק: :${item.sug_delek_nm}</span>
+                                <span> טסט אחרון :${item.mivchan_acharon_dt}</span>
+                            `);
+                        });
+                        $("#car").hide().fadeIn(2000); // Show results with fade-in effect
+                    }
+                }
+            });
+        });
+
+        // Reset button functionality
+        $("#reset-btn").on("click", function () {
+            $("#text").val(''); // Clear the input field
+            $("#car").hide(); // Hide the results
+        });
+
+        // Close modal functionality
+        $("#close-modal").on("click", function () {
+            $("#error-modal").hide(); // Hide the modal when close button is clicked
+        });
+    </script>
+</body>
+
+</html>
